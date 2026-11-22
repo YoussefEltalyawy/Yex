@@ -1,0 +1,646 @@
+[
+  {
+    "name": "subject",
+    "table": "subjects",
+    "module": "study",
+    "doc": "A school subject (e.g. Math, Physics). Top of the study hierarchy: subject > chapter > lesson.",
+    "title_field": "name",
+    "default_order": "position, created_at",
+    "search": [
+      "name"
+    ],
+    "fields": [
+      {
+        "name": "name",
+        "kind": "text",
+        "required": true,
+        "doc": "Display name"
+      },
+      {
+        "name": "icon",
+        "kind": "text",
+        "required": false,
+        "default": "\"📘\"",
+        "doc": "Single emoji used as the icon"
+      },
+      {
+        "name": "color",
+        "kind": "text",
+        "options": [
+          "sky",
+          "mint",
+          "butter",
+          "peach",
+          "lilac",
+          "rose",
+          "sand",
+          "teal"
+        ],
+        "required": false,
+        "default": "\"sky\"",
+        "doc": "Pastel color key"
+      },
+      {
+        "name": "position",
+        "kind": "real",
+        "required": false,
+        "default": "0",
+        "doc": "Sort order (ascending)"
+      },
+      {
+        "name": "archived",
+        "kind": "bool",
+        "required": false,
+        "default": "false",
+        "doc": "Hidden from the sidebar"
+      }
+    ]
+  },
+  {
+    "name": "chapter",
+    "table": "chapters",
+    "module": "study",
+    "doc": "A chapter / unit inside a subject.",
+    "title_field": "name",
+    "default_order": "position, created_at",
+    "search": [
+      "name"
+    ],
+    "fields": [
+      {
+        "name": "subject_id",
+        "kind": "ref",
+        "refs": "subject",
+        "required": true,
+        "cascade": true,
+        "doc": "Owning subject"
+      },
+      {
+        "name": "name",
+        "kind": "text",
+        "required": true,
+        "doc": "Chapter name"
+      },
+      {
+        "name": "position",
+        "kind": "real",
+        "required": false,
+        "default": "0",
+        "doc": "Sort order within the subject"
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "options": [
+          "not_started",
+          "in_progress",
+          "done",
+          "revised"
+        ],
+        "required": false,
+        "default": "\"not_started\"",
+        "doc": "Study progress"
+      }
+    ]
+  },
+  {
+    "name": "lesson",
+    "table": "lessons",
+    "module": "study",
+    "doc": "A lesson inside a chapter. Each lesson has a Notes page (markdown) and a list of mistakes (wrong-answered questions).",
+    "title_field": "name",
+    "default_order": "position, created_at",
+    "search": [
+      "name",
+      "notes"
+    ],
+    "fields": [
+      {
+        "name": "chapter_id",
+        "kind": "ref",
+        "refs": "chapter",
+        "required": true,
+        "cascade": true,
+        "doc": "Owning chapter"
+      },
+      {
+        "name": "subject_id",
+        "kind": "ref",
+        "refs": "subject",
+        "required": false,
+        "doc": "Owning subject (derived from chapter if omitted)"
+      },
+      {
+        "name": "name",
+        "kind": "text",
+        "required": true,
+        "doc": "Lesson name"
+      },
+      {
+        "name": "position",
+        "kind": "real",
+        "required": false,
+        "default": "0",
+        "doc": "Sort order within the chapter"
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "options": [
+          "not_started",
+          "in_progress",
+          "done",
+          "revised"
+        ],
+        "required": false,
+        "default": "\"not_started\"",
+        "doc": "Study progress"
+      },
+      {
+        "name": "notes",
+        "kind": "long_text",
+        "required": false,
+        "doc": "Lesson notes as Markdown"
+      },
+      {
+        "name": "notes_updated_at",
+        "kind": "date_time",
+        "required": false,
+        "doc": "Last time the notes were edited"
+      }
+    ],
+    "inherit": [
+      {
+        "target": "subject_id",
+        "via": "chapter_id",
+        "source": "subject_id"
+      }
+    ]
+  },
+  {
+    "name": "mistake",
+    "table": "mistakes",
+    "module": "study",
+    "doc": "A wrong-answered question to learn from, usually attached to a lesson. Supports spaced review (use the review action).",
+    "title_field": "title",
+    "default_order": "-created_at",
+    "search": [
+      "title",
+      "question",
+      "correct_answer",
+      "explanation",
+      "source"
+    ],
+    "fields": [
+      {
+        "name": "title",
+        "kind": "text",
+        "required": false,
+        "doc": "Short label for the question"
+      },
+      {
+        "name": "question",
+        "kind": "long_text",
+        "required": true,
+        "doc": "The question (Markdown, may contain images)"
+      },
+      {
+        "name": "my_answer",
+        "kind": "long_text",
+        "required": false,
+        "doc": "What I answered (wrong)"
+      },
+      {
+        "name": "correct_answer",
+        "kind": "long_text",
+        "required": false,
+        "doc": "The correct answer"
+      },
+      {
+        "name": "explanation",
+        "kind": "long_text",
+        "required": false,
+        "doc": "Why / the key idea to remember (Markdown)"
+      },
+      {
+        "name": "lesson_id",
+        "kind": "ref",
+        "refs": "lesson",
+        "required": false,
+        "cascade": true,
+        "doc": "Lesson this question belongs to"
+      },
+      {
+        "name": "chapter_id",
+        "kind": "ref",
+        "refs": "chapter",
+        "required": false,
+        "doc": "Chapter (derived from lesson if omitted)"
+      },
+      {
+        "name": "subject_id",
+        "kind": "ref",
+        "refs": "subject",
+        "required": false,
+        "doc": "Subject (derived from lesson/chapter if omitted)"
+      },
+      {
+        "name": "exam_id",
+        "kind": "ref",
+        "refs": "exam",
+        "required": false,
+        "doc": "Quiz / trial where the mistake happened"
+      },
+      {
+        "name": "source",
+        "kind": "text",
+        "required": false,
+        "doc": "Where the question came from (book, teacher, trial...)"
+      },
+      {
+        "name": "kind",
+        "kind": "text",
+        "options": [
+          "concept",
+          "careless",
+          "calculation",
+          "misread",
+          "memory",
+          "time",
+          "other"
+        ],
+        "required": false,
+        "default": "\"concept\"",
+        "doc": "Type of mistake"
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "options": [
+          "open",
+          "reviewing",
+          "mastered"
+        ],
+        "required": false,
+        "default": "\"open\"",
+        "doc": "Learning state"
+      },
+      {
+        "name": "review_count",
+        "kind": "int",
+        "required": false,
+        "default": "0",
+        "doc": "How many times it was reviewed"
+      },
+      {
+        "name": "last_reviewed_at",
+        "kind": "date_time",
+        "required": false,
+        "doc": "Last review time"
+      },
+      {
+        "name": "next_review_at",
+        "kind": "date",
+        "required": false,
+        "doc": "Next spaced-review date (YYYY-MM-DD)"
+      },
+      {
+        "name": "tags",
+        "kind": "json",
+        "required": false,
+        "default": "[]",
+        "doc": "Array of tag strings"
+      }
+    ],
+    "inherit": [
+      {
+        "target": "chapter_id",
+        "via": "lesson_id",
+        "source": "chapter_id"
+      },
+      {
+        "target": "subject_id",
+        "via": "lesson_id",
+        "source": "subject_id"
+      },
+      {
+        "target": "subject_id",
+        "via": "chapter_id",
+        "source": "subject_id"
+      }
+    ]
+  },
+  {
+    "name": "task",
+    "table": "tasks",
+    "module": "tasks",
+    "doc": "A to-do. Tasks with due_date = today appear on the dashboard. Completing a repeating task creates the next occurrence.",
+    "title_field": "title",
+    "default_order": "done, position, created_at",
+    "search": [
+      "title",
+      "notes"
+    ],
+    "fields": [
+      {
+        "name": "title",
+        "kind": "text",
+        "required": true,
+        "doc": "What to do"
+      },
+      {
+        "name": "notes",
+        "kind": "long_text",
+        "required": false,
+        "doc": "Details (Markdown)"
+      },
+      {
+        "name": "priority",
+        "kind": "text",
+        "options": [
+          "none",
+          "low",
+          "medium",
+          "high"
+        ],
+        "required": false,
+        "default": "\"none\"",
+        "doc": "Priority"
+      },
+      {
+        "name": "due_date",
+        "kind": "date",
+        "required": false,
+        "doc": "Day the task is planned for (YYYY-MM-DD)"
+      },
+      {
+        "name": "done",
+        "kind": "bool",
+        "required": false,
+        "default": "false",
+        "doc": "Completed"
+      },
+      {
+        "name": "done_at",
+        "kind": "date_time",
+        "required": false,
+        "doc": "Completion time (set automatically)"
+      },
+      {
+        "name": "estimate_min",
+        "kind": "int",
+        "required": false,
+        "doc": "Estimated minutes"
+      },
+      {
+        "name": "repeat",
+        "kind": "text",
+        "options": [
+          "none",
+          "daily",
+          "weekdays",
+          "weekly"
+        ],
+        "required": false,
+        "default": "\"none\"",
+        "doc": "Recurrence"
+      },
+      {
+        "name": "subject_id",
+        "kind": "ref",
+        "refs": "subject",
+        "required": false,
+        "doc": "Related subject"
+      },
+      {
+        "name": "lesson_id",
+        "kind": "ref",
+        "refs": "lesson",
+        "required": false,
+        "doc": "Related lesson"
+      },
+      {
+        "name": "exam_id",
+        "kind": "ref",
+        "refs": "exam",
+        "required": false,
+        "doc": "Related quiz / trial"
+      },
+      {
+        "name": "position",
+        "kind": "real",
+        "required": false,
+        "default": "0",
+        "doc": "Manual sort order"
+      }
+    ],
+    "inherit": [
+      {
+        "target": "subject_id",
+        "via": "lesson_id",
+        "source": "subject_id"
+      }
+    ]
+  },
+  {
+    "name": "exam",
+    "table": "exams",
+    "module": "exams",
+    "doc": "A dated assessment: quiz, trial (mock exam), exam or homework. Holds the score once done.",
+    "title_field": "title",
+    "default_order": "date, time",
+    "search": [
+      "title",
+      "scope",
+      "notes"
+    ],
+    "fields": [
+      {
+        "name": "title",
+        "kind": "text",
+        "required": true,
+        "doc": "Name, e.g. 'Physics trial 3'"
+      },
+      {
+        "name": "kind",
+        "kind": "text",
+        "options": [
+          "quiz",
+          "trial",
+          "exam",
+          "homework",
+          "other"
+        ],
+        "required": false,
+        "default": "\"quiz\"",
+        "doc": "Type"
+      },
+      {
+        "name": "subject_id",
+        "kind": "ref",
+        "refs": "subject",
+        "required": false,
+        "doc": "Subject"
+      },
+      {
+        "name": "chapter_id",
+        "kind": "ref",
+        "refs": "chapter",
+        "required": false,
+        "doc": "Main chapter covered"
+      },
+      {
+        "name": "scope",
+        "kind": "text",
+        "required": false,
+        "doc": "What's included (free text)"
+      },
+      {
+        "name": "date",
+        "kind": "date",
+        "required": true,
+        "doc": "Date (YYYY-MM-DD)"
+      },
+      {
+        "name": "time",
+        "kind": "text",
+        "required": false,
+        "doc": "Time of day HH:MM (24h)"
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "options": [
+          "upcoming",
+          "done",
+          "missed",
+          "cancelled"
+        ],
+        "required": false,
+        "default": "\"upcoming\"",
+        "doc": "State"
+      },
+      {
+        "name": "score",
+        "kind": "real",
+        "required": false,
+        "doc": "Obtained score"
+      },
+      {
+        "name": "max_score",
+        "kind": "real",
+        "required": false,
+        "doc": "Maximum score"
+      },
+      {
+        "name": "notes",
+        "kind": "long_text",
+        "required": false,
+        "doc": "Notes / reflection (Markdown)"
+      },
+      {
+        "name": "remind",
+        "kind": "bool",
+        "required": false,
+        "default": "true",
+        "doc": "Send reminders"
+      }
+    ],
+    "inherit": [
+      {
+        "target": "subject_id",
+        "via": "chapter_id",
+        "source": "subject_id"
+      }
+    ]
+  },
+  {
+    "name": "focus_session",
+    "table": "focus_sessions",
+    "module": "focus",
+    "doc": "A logged focus (or break) session from the timer. duration_sec is the actual focused time.",
+    "title_field": "note",
+    "default_order": "-started_at",
+    "search": [
+      "note"
+    ],
+    "fields": [
+      {
+        "name": "started_at",
+        "kind": "date_time",
+        "required": true,
+        "doc": "Start time (RFC3339)"
+      },
+      {
+        "name": "ended_at",
+        "kind": "date_time",
+        "required": false,
+        "doc": "End time (RFC3339)"
+      },
+      {
+        "name": "duration_sec",
+        "kind": "int",
+        "required": true,
+        "doc": "Actual duration in seconds"
+      },
+      {
+        "name": "mode",
+        "kind": "text",
+        "options": [
+          "pomodoro",
+          "countdown",
+          "stopwatch",
+          "flow"
+        ],
+        "required": false,
+        "default": "\"pomodoro\"",
+        "doc": "Timer mode"
+      },
+      {
+        "name": "kind",
+        "kind": "text",
+        "options": [
+          "focus",
+          "break"
+        ],
+        "required": false,
+        "default": "\"focus\"",
+        "doc": "Session type"
+      },
+      {
+        "name": "task_id",
+        "kind": "ref",
+        "refs": "task",
+        "required": false,
+        "doc": "Task worked on"
+      },
+      {
+        "name": "subject_id",
+        "kind": "ref",
+        "refs": "subject",
+        "required": false,
+        "doc": "Subject (derived from task if omitted)"
+      },
+      {
+        "name": "completed",
+        "kind": "bool",
+        "required": false,
+        "default": "true",
+        "doc": "Ran to completion"
+      },
+      {
+        "name": "note",
+        "kind": "text",
+        "required": false,
+        "doc": "Optional note"
+      }
+    ],
+    "inherit": [
+      {
+        "target": "subject_id",
+        "via": "task_id",
+        "source": "subject_id"
+      }
+    ]
+  }
+]

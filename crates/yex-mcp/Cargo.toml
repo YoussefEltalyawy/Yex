@@ -1,0 +1,10 @@
+[package]
+name = "yex-mcp"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+yex-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true

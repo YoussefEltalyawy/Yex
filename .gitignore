@@ -1,0 +1,7 @@
+node_modules
+dist
+target
+.shots
+*.log
+src-tauri/gen
+src-tauri/binaries
