@@ -127,6 +127,20 @@ fn spawn_db_watcher(app: tauri::AppHandle) {
     });
 }
 
+/// Ask WebView2 to trim memory while YEX is minimized (keeps RAM low in the background).
+#[cfg(windows)]
+fn set_low_memory(window: &tauri::WebviewWindow, low: bool) {
+    use webview2_com::Microsoft::Web::WebView2::Win32::*;
+    use windows_core::Interface;
+    let _ = window.with_webview(move |wv| unsafe {
+        let Ok(core) = wv.controller().CoreWebView2() else { return };
+        if let Ok(c) = core.cast::<ICoreWebView2_19>() {
+            let level = if low { COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_LOW } else { COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL_NORMAL };
+            let _ = c.SetMemoryUsageTargetLevel(level);
+        }
+    });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let conn = db::open(&db::default_db_path()).expect("failed to open YEX database");
@@ -141,6 +155,14 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(Db(Mutex::new(conn)))
+        .on_window_event(|window, event| {
+            #[cfg(windows)]
+            if let tauri::WindowEvent::Resized(_) = event {
+                if let Some(w) = window.app_handle().get_webview_window(window.label()) {
+                    set_low_memory(&w, w.is_minimized().unwrap_or(false));
+                }
+            }
+        })
         .setup(|app| {
             spawn_db_watcher(app.handle().clone());
             reminders::spawn(app.handle().clone());
