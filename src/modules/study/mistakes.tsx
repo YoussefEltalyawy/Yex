@@ -9,6 +9,7 @@ import { Button, Icon, IconButton, Input } from "@/ui/core";
 import { Markdown } from "@/ui/Markdown";
 import { Dialog, Menu, Select, usePopover } from "@/ui/overlay";
 import { RichEditor } from "@/ui/RichEditor";
+import { LessonPicker } from "./LessonPicker";
 
 export const KIND_TINT: Record<string, string> = { concept: "lilac", careless: "peach", calculation: "sky", misread: "butter", memory: "teal", time: "rose", other: "sand" };
 export const STATUS_META: Record<string, { label: string; tint: string }> = {
@@ -147,7 +148,7 @@ export function MistakeEditor({ open, onClose, mistake, lessonId }: { open: bool
     if (mistake) await update.mutateAsync({ id: mistake.id, patch: data });
     else await create.mutateAsync(data);
     if (another) {
-      setD({ ...empty, kind: d.kind, source: d.source, exam_id: d.exam_id });
+      setD({ ...empty, kind: d.kind, source: d.source, exam_id: d.exam_id, lesson_id: d.lesson_id });
       setNonce((n) => n + 1);
     } else onClose();
   };
@@ -184,7 +185,8 @@ export function MistakeEditor({ open, onClose, mistake, lessonId }: { open: bool
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-3 pb-1">
+        <div className="flex items-center gap-2 pb-1">
+          <LessonPicker value={d.lesson_id} onChange={set("lesson_id")} />
           <Input placeholder="Source (book, teacher, trial…)" value={d.source ?? ""} onChange={(e) => set("source")(e.target.value)} className="flex-1" />
           <Select
             value={d.exam_id ?? "none"}

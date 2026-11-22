@@ -25,20 +25,45 @@
         "shadow": true,
         "visible": true,
         "backgroundThrottling": "disabled",
-        "windowEffects": { "effects": ["mica"] }
+        "windowEffects": {
+          "effects": [
+            "mica"
+          ]
+        }
       }
     ],
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; font-src 'self' data:; connect-src ipc: http://ipc.localhost; media-src 'self' asset: http://asset.localhost data:; object-src 'none'; base-uri 'self'",
-      "assetProtocol": { "enable": true, "scope": ["$APPDATA/app.yex.desktop/**"] }
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$APPDATA/app.yex.desktop/**"
+        ]
+      }
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico", "icons/icon.png"],
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
     "windows": {
-      "nsis": { "installMode": "currentUser" }
-    }
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
+      }
+    },
+    "externalBin": [
+      "binaries/yex-mcp"
+    ],
+    "shortDescription": "YEX — your study & life dashboard",
+    "publisher": "YEX"
   }
 }

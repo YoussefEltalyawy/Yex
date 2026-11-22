@@ -13,7 +13,7 @@ import { PROGRESS_OPTIONS } from "./LessonPage";
 import { goToMistake, KIND_TINT } from "./mistakes";
 import { SubjectDialog } from "./SubjectDialog";
 
-const NEXT_STATUS: Record<P, P> = { not_started: "in_progress", in_progress: "done", done: "revised", revised: "not_started" };
+const NEXT_STATUS: Record<P, P> = { not_started: "in_progress", in_progress: "done", done: "revised", revised: "revised" };
 const STATUS_DOT: Record<P, string> = {
   not_started: "shadow-[inset_0_0_0_1.5px_var(--color-fg-4)]",
   in_progress: "bg-[conic-gradient(var(--butter-fg)_0_50%,transparent_50%)] shadow-[inset_0_0_0_1.5px_var(--butter-fg)]",

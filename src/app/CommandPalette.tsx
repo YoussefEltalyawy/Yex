@@ -102,7 +102,7 @@ export function CommandPalette() {
           />
           <Kbd>Esc</Kbd>
         </div>
-        <div ref={listRef} className="max-h-[420px] overflow-y-auto p-1.5">
+        <div ref={listRef} className="max-h-[400px] overflow-y-auto p-1.5">
           {items.length === 0 && <div className="px-3 py-8 text-center text-sm text-fg-3">No results for “{q}”</div>}
           {items.map((c, i) => {
             const header = c.group !== lastGroup ? c.group : null;
@@ -125,6 +125,12 @@ export function CommandPalette() {
               </div>
             );
           })}
+        </div>
+        <div className="flex items-center gap-4 border-t border-stroke px-4 py-2 text-2xs text-fg-4">
+          <span className="flex items-center gap-1"><Kbd>↑</Kbd><Kbd>↓</Kbd> navigate</span>
+          <span className="flex items-center gap-1"><Kbd>↵</Kbd> open</span>
+          <span className="flex-1" />
+          <span>Searches subjects, lessons, tasks, exams and mistakes</span>
         </div>
       </div>
     </div>,

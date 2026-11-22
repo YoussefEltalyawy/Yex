@@ -23,7 +23,7 @@ import { cn, EXAM_KINDS, MISTAKE_KINDS, pct } from "@/lib/utils";
 import { Button, Icon, IconButton, type IconType } from "@/ui/core";
 import { Check, DatePicker, Menu, Select, usePopover } from "@/ui/overlay";
 import { RichEditor } from "@/ui/RichEditor";
-import { CountdownPill, DateTile, DraftInput, fmtNum, needsScore, parseNum, scoreTint, STATUS_LABEL, StatusBadge, Switch, usePrepare } from "./parts";
+import { CountdownPill, DateTile, DraftInput, fmtNum, needsScore, parseNum, parseTime, scoreTint, STATUS_LABEL, StatusBadge, Switch, usePrepare } from "./parts";
 
 const STATUS_TINT: Record<ExamStatus, string> = { upcoming: "sky", done: "mint", missed: "rose", cancelled: "sand" };
 
@@ -148,7 +148,8 @@ export function ExamDetail({ exam, subjects, onClose }: { exam: Exam; subjects: 
             <div className="min-w-0 flex-1 pt-0.5">
               <DraftInput
                 value={exam.title}
-                onCommit={(v) => v.trim() && patch({ title: v.trim() })}
+                normalize={(v) => v.trim() || null}
+                onCommit={(title) => patch({ title })}
                 placeholder="Untitled"
                 className="font-display text-[22px] font-medium leading-tight tracking-tight"
               />
@@ -199,15 +200,17 @@ export function ExamDetail({ exam, subjects, onClose }: { exam: Exam; subjects: 
               </DatePicker>
             </Prop>
             <Prop icon={Clock01Icon} label="Time">
-              <input
-                type="time"
+              <DraftInput
                 value={exam.time ?? ""}
-                onChange={(e) => patch({ time: e.target.value || null })}
-                className="-ml-2 h-7 rounded-md bg-transparent px-2 text-sm tabular text-fg outline-none transition-colors hover:bg-hover focus:bg-hover [&::-webkit-calendar-picker-indicator]:opacity-40"
+                normalize={(v) => (v.trim() ? parseTime(v) : "")}
+                onCommit={(v) => patch({ time: v || null })}
+                placeholder="Add time"
+                className="-ml-2 h-7 w-auto max-w-[140px] rounded-md px-2 text-sm tabular transition-colors hover:bg-hover focus:bg-hover"
               />
             </Prop>
             <Prop icon={Note01Icon} label="Scope">
-              <DraftInput value={exam.scope ?? ""} onCommit={(v) => patch({ scope: v.trim() || null })} placeholder="What's included…" className="h-7 rounded-md px-0 text-sm" />
+              <DraftInput value={exam.scope ?? ""} normalize={(v) => v.trim()}
+                onCommit={(v) => patch({ scope: v || null })} placeholder="What's included…" className="h-7 rounded-md px-0 text-sm" />
             </Prop>
             <Prop icon={Alert02Icon} label="Status">
               <Select<ExamStatus>

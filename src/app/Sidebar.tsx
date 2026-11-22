@@ -1,4 +1,4 @@
-import { Add01Icon, ArrowRight01Icon, Delete02Icon, Edit02Icon, Moon02Icon, PauseIcon, PlayIcon, Search01Icon, Settings01Icon, SidebarLeftIcon, Sun03Icon } from "@hugeicons/core-free-icons";
+import { Add01Icon, AlertCircleIcon, Note01Icon, ArrowRight01Icon, Delete02Icon, Edit02Icon, Moon02Icon, PauseIcon, PlayIcon, Search01Icon, Settings01Icon, SidebarLeftIcon, Sun03Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
 import { fmtClock } from "@/lib/dates";
 import { useList, useOverview, useRemove } from "@/lib/query";
@@ -30,10 +30,76 @@ function NavRow({ active, icon, label, badge, onClick, collapsed, shortcut }: { 
   );
 }
 
+type R = { name: string; params: Record<string, string> };
+
+function LessonNode({ lesson: l, route }: { lesson: Lesson; route: R }) {
+  const ctx = useContextMenu();
+  const remove = useRemove("lesson", "Lesson");
+  const on = route.name === "lesson" && route.params.id === l.id;
+  return (
+    <>
+      <button
+        onClick={() => navigate("lesson", { id: l.id })}
+        onContextMenu={ctx.onContextMenu}
+        className={cn("flex h-7 w-full items-center gap-2 rounded-md pl-5 pr-2 text-left text-sm transition-colors", on ? "bg-selected font-medium text-fg" : "text-fg-3 hover:bg-hover hover:text-fg")}
+      >
+        <span className={cn("size-1.5 shrink-0 rounded-full", l.status === "done" ? "bg-[var(--mint-fg)]" : l.status === "revised" ? "bg-[var(--sky-fg)]" : l.status === "in_progress" ? "bg-[var(--butter-fg)]" : "bg-fg-4")} />
+        <span className="truncate" dir="auto">
+          {l.name}
+        </span>
+      </button>
+      <Menu
+        open={ctx.open}
+        onClose={ctx.close}
+        anchor={ctx.anchor}
+        point={ctx.point}
+        items={[
+          { label: "Open notes", icon: Note01Icon, onSelect: () => navigate("lesson", { id: l.id }) },
+          { label: "Open mistakes", icon: AlertCircleIcon, onSelect: () => navigate("lesson", { id: l.id, tab: "mistakes" }) },
+          { label: "Log a mistake…", icon: Add01Icon, onSelect: () => useApp.setState({ mistakeDialog: { lessonId: l.id } }) },
+          { separator: true, label: "" },
+          { label: "Delete lesson", icon: Delete02Icon, danger: true, onSelect: () => remove.mutate(l.id) },
+        ]}
+      />
+    </>
+  );
+}
+
+function ChapterNode({ chapter: c, lessons, route }: { chapter: Chapter; lessons: Lesson[]; route: R }) {
+  const open = useApp((s) => !!s.expanded[c.id]);
+  const toggle = useApp((s) => s.toggleExpanded);
+  const ctx = useContextMenu();
+  const remove = useRemove("chapter", "Chapter");
+  return (
+    <div>
+      <div className="group flex h-7 items-center rounded-md hover:bg-hover" onContextMenu={ctx.onContextMenu}>
+        <button onClick={() => toggle(c.id)} className="grid h-7 w-5 shrink-0 place-items-center text-fg-4 hover:text-fg-2">
+          <Icon icon={ArrowRight01Icon} size={11} className={cn("transition-transform duration-150", open && "rotate-90")} />
+        </button>
+        <button onClick={() => navigate("subject", { id: c.subject_id, chapter: c.id })} className="min-w-0 flex-1 truncate text-left text-sm text-fg-2 group-hover:text-fg" dir="auto">
+          {c.name}
+        </button>
+      </div>
+      {open && lessons.map((l) => <LessonNode key={l.id} lesson={l} route={route} />)}
+      {open && lessons.length === 0 && <div className="py-1 pl-5 text-xs text-fg-4">No lessons</div>}
+      <Menu
+        open={ctx.open}
+        onClose={ctx.close}
+        anchor={ctx.anchor}
+        point={ctx.point}
+        items={[
+          { label: "Open chapter", icon: ArrowRight01Icon, onSelect: () => navigate("subject", { id: c.subject_id, chapter: c.id }) },
+          { separator: true, label: "" },
+          { label: "Delete chapter", icon: Delete02Icon, danger: true, onSelect: () => remove.mutate(c.id) },
+        ]}
+      />
+    </div>
+  );
+}
+
 function SubjectTree({ subject, chapters, lessons, route }: { subject: Subject; chapters: Chapter[]; lessons: Record<string, Lesson[]>; route: { name: string; params: Record<string, string> } }) {
   const open = useApp((s) => !!s.expanded[subject.id]);
   const toggle = useApp((s) => s.toggleExpanded);
-  const expanded = useApp((s) => s.expanded);
   const ctx = useContextMenu();
   const [editing, setEditing] = useState(false);
   const remove = useRemove("subject", "Subject");
@@ -58,37 +124,9 @@ function SubjectTree({ subject, chapters, lessons, route }: { subject: Subject; 
       {open && (
         <div className="relative ml-[17px] border-l border-stroke pl-1.5">
           {chapters.length === 0 && <div className="px-2 py-1 text-xs text-fg-4">No chapters yet</div>}
-          {chapters.map((c) => {
-            const chOpen = !!expanded[c.id];
-            return (
-              <div key={c.id}>
-                <div className="group flex h-7 items-center rounded-md hover:bg-hover">
-                  <button onClick={() => toggle(c.id)} className="grid h-7 w-5 shrink-0 place-items-center text-fg-4 hover:text-fg-2">
-                    <Icon icon={ArrowRight01Icon} size={11} className={cn("transition-transform duration-150", chOpen && "rotate-90")} />
-                  </button>
-                  <button onClick={() => navigate("subject", { id: subject.id, chapter: c.id })} className="min-w-0 flex-1 truncate text-left text-sm text-fg-2 group-hover:text-fg" dir="auto">
-                    {c.name}
-                  </button>
-                </div>
-                {chOpen &&
-                  (lessons[c.id] ?? []).map((l) => {
-                    const on = route.name === "lesson" && route.params.id === l.id;
-                    return (
-                      <button
-                        key={l.id}
-                        onClick={() => navigate("lesson", { id: l.id })}
-                        className={cn("flex h-7 w-full items-center gap-2 rounded-md pl-5 pr-2 text-left text-sm transition-colors", on ? "bg-selected font-medium text-fg" : "text-fg-3 hover:bg-hover hover:text-fg")}
-                      >
-                        <span className={cn("size-1.5 shrink-0 rounded-full", l.status === "done" || l.status === "revised" ? "bg-[var(--mint-fg)]" : l.status === "in_progress" ? "bg-[var(--butter-fg)]" : "bg-fg-4")} />
-                        <span className="truncate" dir="auto">
-                          {l.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-              </div>
-            );
-          })}
+          {chapters.map((c) => (
+            <ChapterNode key={c.id} chapter={c} lessons={lessons[c.id] ?? []} route={route} />
+          ))}
         </div>
       )}
       <Menu
@@ -108,10 +146,16 @@ function SubjectTree({ subject, chapters, lessons, route }: { subject: Subject; 
   );
 }
 
-function MiniTimer() {
+function MiniTimer({ collapsed }: { collapsed: boolean }) {
   const t = useTimerView();
   const route = useApp((s) => s.route.name);
   if (t.status === "idle" || route === "focus") return null;
+  if (collapsed)
+    return (
+      <button onClick={() => navigate("focus")} title={`${PHASE_LABEL[t.phase]} · ${fmtClock(t.mode === "stopwatch" ? t.elapsed : t.remaining)}`} className="mx-auto mb-2 grid size-10 place-items-center rounded-xl bg-surface text-2xs font-semibold tabular shadow-card">
+        {Math.ceil((t.mode === "stopwatch" ? t.elapsed : t.remaining) / 60)}m
+      </button>
+    );
   return (
     <div className="anim-rise mx-2 mb-2 flex items-center gap-2 rounded-xl bg-surface p-1.5 pl-3 shadow-card">
       <button className="min-w-0 flex-1 text-left" onClick={() => navigate("focus")}>
@@ -196,6 +240,11 @@ export function Sidebar() {
               <span className="text-xs font-medium text-fg-3">Subjects</span>
               <IconButton icon={Add01Icon} label="New subject" size="xs" className="opacity-0 group-hover:opacity-100" onClick={() => setAdding(true)} />
             </div>
+            {subjects.length === 0 && (
+              <button onClick={() => setAdding(true)} className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-fg-3 shadow-[inset_0_0_0_1px_var(--color-stroke)] hover:bg-hover hover:text-fg-2">
+                <Icon icon={Add01Icon} size={14} /> Add your first subject
+              </button>
+            )}
             <div className="space-y-px">
               {subjects.map((s) => (
                 <SubjectTree key={s.id} subject={s} chapters={chaptersBySubject[s.id] ?? []} lessons={lessonsByChapter} route={route} />
@@ -218,7 +267,7 @@ export function Sidebar() {
         )}
       </div>
 
-      {!collapsed && <MiniTimer />}
+      <MiniTimer collapsed={collapsed} />
       <div className={cn("flex shrink-0 items-center gap-1 px-2 pb-2.5 pt-1", collapsed && "flex-col")}>
         <NavRow active={route.name === "settings"} icon={<Icon icon={Settings01Icon} size={17} />} label="Settings" collapsed={collapsed} onClick={() => navigate("settings")} />
         <IconButton

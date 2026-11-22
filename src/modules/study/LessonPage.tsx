@@ -54,7 +54,12 @@ export default function LessonPage({ params }: PageProps) {
   const [name, setName] = useState("");
   const [adding, setAdding] = useState(false);
   const [filter, setFilter] = useState<"all" | MistakeStatus>("all");
-  const [saved, setSaved] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (!saved) return;
+    const t = setTimeout(() => setSaved(false), 2500);
+    return () => clearTimeout(t);
+  }, [saved]);
 
   useEffect(() => setName(lesson?.name ?? ""), [lesson?.name]);
   useEffect(() => setTab(params.tab === "mistakes" ? "mistakes" : "notes"), [params.tab]);
@@ -82,7 +87,7 @@ export default function LessonPage({ params }: PageProps) {
         ]}
         actions={
           <>
-            {tab === "notes" && saved && <span className="mr-2 text-xs text-fg-4">Saved {saved}</span>}
+            <span className={cn("mr-2 text-xs text-fg-4 transition-opacity duration-500", tab === "notes" && saved ? "opacity-100" : "opacity-0")}>Saved</span>
             <Select value={lesson.status} options={PROGRESS_OPTIONS} onChange={(status) => update.mutate({ id: lesson.id, patch: { status } })} align="end" />
             <IconButton ref={menu.ref} icon={MoreHorizontalIcon} label="More" onClick={menu.toggle} />
             <Menu
@@ -119,7 +124,7 @@ export default function LessonPage({ params }: PageProps) {
             <RichEditor
               key={lesson.id}
               value={lesson.notes}
-              onChange={(notes) => update.mutate({ id: lesson.id, patch: { notes } }, { onSuccess: () => setSaved("just now") })}
+              onChange={(notes) => update.mutate({ id: lesson.id, patch: { notes } }, { onSuccess: () => setSaved(true) })}
               placeholder="Start your lesson notes… Use # for headings, - for lists, [ ] for checklists. Paste images directly."
               className="min-h-[50vh]"
             />

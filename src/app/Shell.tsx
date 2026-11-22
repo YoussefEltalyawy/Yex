@@ -5,6 +5,8 @@ import { navigate, useApp } from "@/lib/store";
 import { TimerEngine } from "@/modules/focus/hooks";
 import { timer } from "@/modules/focus/timer";
 import { navItems, pages } from "@/modules/registry";
+import { MistakeEditor } from "@/modules/study/mistakes";
+import { cn } from "@/lib/utils";
 import { Empty } from "@/ui/core";
 import { Toaster } from "@/ui/Toaster";
 import { CommandPalette } from "./CommandPalette";
@@ -35,6 +37,9 @@ function useShortcuts() {
       } else if (mod && e.shiftKey && e.code === "Space") {
         e.preventDefault();
         timer.toggle();
+      } else if (mod && e.shiftKey && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        useApp.setState({ mistakeDialog: { lessonId: app.route.name === "lesson" ? app.route.params.id : undefined } });
       } else if (mod && !e.shiftKey && e.key.toLowerCase() === "n") {
         e.preventDefault();
         navigate("tasks", { new: String(Date.now()) });
@@ -75,6 +80,8 @@ function PageHost() {
 }
 
 export function Shell() {
+  const chromeDark = useApp((s) => s.chromeDark);
+  const mistakeDialog = useApp((s) => s.mistakeDialog);
   useThemeSync();
   useShortcuts();
   useEffect(() => backend().onExternalChange(invalidateAll), []);
@@ -91,10 +98,11 @@ export function Shell() {
       <main className="min-w-0 flex-1 py-2 pr-2">
         <div className="relative flex h-full flex-col overflow-hidden rounded-xl bg-canvas shadow-panel">
           <PageHost />
-          <WindowControls className="absolute right-0 top-0 z-20" />
+          <WindowControls className={cn("absolute right-0 top-0 z-20", chromeDark && "dark")} />
         </div>
       </main>
       <CommandPalette />
+      <MistakeEditor open={!!mistakeDialog} onClose={() => useApp.setState({ mistakeDialog: null })} lessonId={mistakeDialog?.lessonId} />
       <Toaster />
       <TimerEngine />
     </div>

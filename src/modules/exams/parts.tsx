@@ -105,13 +105,22 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
 }
 
 /** Input with local state that commits on blur / Enter and resyncs with outside changes. */
-export function DraftInput({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & { value: string; onCommit: (v: string) => void }) {
+export function DraftInput({
+  value,
+  onCommit,
+  normalize = (v) => v,
+  ...rest
+}: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & { value: string; onCommit: (v: string) => void; normalize?: (v: string) => string | null }) {
   const [draft, setDraft] = useState(value);
   const focused = useRef(false);
   useEffect(() => {
     if (!focused.current) setDraft(value);
   }, [value]);
-  const commit = () => draft !== value && onCommit(draft);
+  const commit = () => {
+    const v = normalize(draft);
+    setDraft(v ?? value);
+    if (v != null && v !== value) onCommit(v);
+  };
   return (
     <BareInput
       {...rest}
@@ -232,11 +241,10 @@ export function PrepareButton({ exam, ...btn }: Omit<ButtonProps, "onClick"> & {
   );
 }
 
-
 /** "9" → 09:00, "930" → 09:30, "17.30" → 17:30; null if not a valid time. */
 export function parseTime(s: string): string | null {
   const t = s.trim();
-  const m = t.match(/^(d{1,2})[:.s](d{1,2})$/) ?? t.match(/^(d{1,2})(d{2})?$/);
+  const m = t.match(/^(\d{1,2})[:.\s](\d{1,2})$/) ?? t.match(/^(\d{1,2})(\d{2})?$/);
   if (!m) return null;
   const h = Number(m[1]);
   const min = Number(m[2] ?? 0);

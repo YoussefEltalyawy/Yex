@@ -28,6 +28,10 @@ interface AppState {
   theme: ThemePref;
   dark: boolean;
   setTheme: (t: ThemePref) => void;
+  /** Force dark caption buttons (e.g. dark focus scenes). */
+  chromeDark: boolean;
+  /** Global "log a mistake" dialog; lessonId preselects the lesson. */
+  mistakeDialog: { lessonId?: string } | null;
   paletteOpen: boolean;
   setPalette: (open: boolean) => void;
   sidebarCollapsed: boolean;
@@ -71,6 +75,8 @@ export const useApp = create<AppState>((set, get) => ({
     localStorage.setItem("yex-theme", theme);
     set({ theme, dark: resolve(theme) });
   },
+  chromeDark: false,
+  mistakeDialog: null,
   paletteOpen: false,
   setPalette: (paletteOpen) => set({ paletteOpen }),
   sidebarCollapsed: localStorage.getItem("yex-sidebar") === "collapsed",

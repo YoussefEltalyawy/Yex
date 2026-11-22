@@ -2,7 +2,7 @@ import { Calendar03Icon, Clock01Icon, Delete02Icon, Edit02Icon, MoreHorizontalIc
 import { useRef } from "react";
 import { daysUntil, fmtMinutes, relativeDay, today } from "@/lib/dates";
 import { useRemove, useUpdate } from "@/lib/query";
-import { navigate } from "@/lib/store";
+import { navigate, useApp } from "@/lib/store";
 import type { Subject, Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { timer, useTimer } from "@/modules/focus/timer";
@@ -20,17 +20,14 @@ export function TaskRow({ task, subject, onOpen, showDate = true, compact, selec
   const startFocus = () => {
     timer.setTask(task.id, task.subject_id);
     if (useTimer.getState().status !== "running") timer.start();
-    navigate("focus");
+    if (useApp.getState().route.name !== "home") navigate("focus");
   };
 
   return (
     <div
       ref={rowRef}
       onClick={() => onOpen?.(task)}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        menu.setOpen(true);
-      }}
+      onContextMenu={menu.openAt}
       className={cn(
         "group relative flex items-start gap-3 rounded-lg px-2.5 transition-colors duration-100",
         compact ? "py-[7px]" : "py-2",
@@ -85,6 +82,7 @@ export function TaskRow({ task, subject, onOpen, showDate = true, compact, selec
         open={menu.open}
         onClose={menu.close}
         anchor={menu.ref}
+        point={menu.point}
         align="end"
         items={[
           { label: "Focus on this", icon: PlayIcon, onSelect: startFocus, disabled: task.done },

@@ -8,9 +8,27 @@ import { Icon, type IconType } from "./core";
 /* ---------------- Popover ---------------- */
 
 export function usePopover<T extends HTMLElement = HTMLButtonElement>() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(false);
+  const [point, setPoint] = useState<{ x: number; y: number } | null>(null);
   const ref = useRef<T>(null);
-  return { open, setOpen, ref, toggle: () => setOpen((o) => !o), close: () => setOpen(false) };
+  const setOpen = (v: boolean | ((o: boolean) => boolean)) => {
+    setPoint(null);
+    setOpenState(v);
+  };
+  return {
+    open,
+    setOpen,
+    ref,
+    point,
+    toggle: () => setOpen((o) => !o),
+    close: () => setOpenState(false),
+    /** Open at the cursor (right-click). */
+    openAt: (e: React.MouseEvent) => {
+      e.preventDefault();
+      setPoint({ x: e.clientX, y: e.clientY });
+      setOpenState(true);
+    },
+  };
 }
 
 interface PopoverProps {
@@ -297,8 +315,8 @@ export function Segmented<T extends string>({ value, options, onChange, classNam
 /* ---------------- Check (round, Craft-like) ---------------- */
 
 const PRIORITY_RING: Record<string, string> = {
-  high: "shadow-[inset_0_0_0_1.5px_var(--rose-fg)] bg-[color-mix(in_srgb,var(--rose)_25%,transparent)]",
-  medium: "shadow-[inset_0_0_0_1.5px_var(--butter-fg)] bg-[color-mix(in_srgb,var(--butter)_25%,transparent)]",
+  high: "shadow-[inset_0_0_0_1.5px_var(--rose-fg)] bg-[color-mix(in_srgb,var(--rose)_25%,transparent)] dark:bg-[color-mix(in_srgb,var(--rose)_10%,transparent)]",
+  medium: "shadow-[inset_0_0_0_1.5px_var(--butter-fg)] bg-[color-mix(in_srgb,var(--butter)_25%,transparent)] dark:bg-[color-mix(in_srgb,var(--butter)_8%,transparent)]",
   low: "shadow-[inset_0_0_0_1.5px_var(--sky-fg)]",
   none: "shadow-[inset_0_0_0_1.5px_var(--color-fg-4)]",
 };

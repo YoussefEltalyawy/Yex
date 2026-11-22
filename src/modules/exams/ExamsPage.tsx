@@ -294,7 +294,7 @@ export default function ExamsPage({ params }: PageProps) {
                   {groups.map(([label, xs], i) => (
                     <section key={label} className="anim-rise mb-6" style={{ animationDelay: `${60 + i * 30}ms` }}>
                       <SectionHead title={label} sub={xs.length} />
-                      <div className="-mx-0">{xs.map((e) => row(e))}</div>
+                      {xs.map((e) => row(e))}
                     </section>
                   ))}
 

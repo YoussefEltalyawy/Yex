@@ -6,6 +6,7 @@ import type { Exam, ExamKind, Subject } from "@/lib/types";
 import { cn, EXAM_KINDS } from "@/lib/utils";
 import { Button, Icon, Input, Kbd } from "@/ui/core";
 import { DatePicker, Dialog, Segmented, Select } from "@/ui/overlay";
+import { parseTime } from "./parts";
 
 const KINDS = (Object.keys(EXAM_KINDS) as ExamKind[]).map((k) => ({ value: k, label: EXAM_KINDS[k] }));
 
@@ -45,11 +46,13 @@ export function ExamDialog({ open, onClose, onCreated, subjects, exams, defaults
     return `${subject.name} ${EXAM_KINDS[kind].toLowerCase()} ${n + 1}`;
   }, [subject, kind, exams]);
   const finalTitle = title.trim() || suggestion;
-  const ready = !!finalTitle && !!date && !create.isPending;
+  const parsedTime = time.trim() ? parseTime(time) : null;
+  const badTime = !!time.trim() && !parsedTime;
+  const ready = !!finalTitle && !!date && !badTime && !create.isPending;
 
   const submit = async () => {
     if (!ready) return;
-    const e = await create.mutateAsync({ title: finalTitle, kind, subject_id: subjectId || null, date: date!, time: time || null, scope: scope.trim() || null });
+    const e = await create.mutateAsync({ title: finalTitle, kind, subject_id: subjectId || null, date: date!, time: parsedTime, scope: scope.trim() || null });
     onCreated(e);
   };
 
@@ -67,7 +70,7 @@ export function ExamDialog({ open, onClose, onCreated, subjects, exams, defaults
           <div className={cn("grid size-10 shrink-0 place-items-center rounded-xl text-[19px] tint-bg transition-colors", `tint-${subject?.color ?? "sand"}`)}>{subject?.icon ?? "🗓️"}</div>
           <div className="min-w-0">
             <div className="font-display text-lg leading-tight">New {EXAM_KINDS[kind].toLowerCase()}</div>
-            <div className="text-xs text-fg-3">{date ? `${relativeDay(date)}${time ? ` at ${time}` : ""}` : "Pick a date so it shows up in your countdowns"}</div>
+            <div className="text-xs text-fg-3">{date ? `${relativeDay(date)}${parsedTime ? ` at ${parsedTime}` : ""}` : "Pick a date so it shows up in your countdowns"}</div>
           </div>
         </div>
         <div className="space-y-4 px-5 pb-5 pt-4">
@@ -93,9 +96,15 @@ export function ExamDialog({ open, onClose, onCreated, subjects, exams, defaults
             </div>
             <div>
               <div className={field}>Time</div>
-              <label className={cn(box, "flex items-center gap-1.5")}>
+              <label className={cn(box, "flex items-center gap-1.5", badTime && "shadow-[inset_0_0_0_1px_var(--color-danger)]")}>
                 <Icon icon={Clock01Icon} size={14} className="text-fg-3" />
-                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full min-w-0 bg-transparent text-base tabular outline-none [&::-webkit-calendar-picker-indicator]:hidden" />
+                <input
+                  placeholder="HH:MM"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  onBlur={() => parsedTime && setTime(parsedTime)}
+                  className="w-full min-w-0 bg-transparent text-base tabular outline-none placeholder:text-fg-4"
+                />
               </label>
             </div>
           </div>

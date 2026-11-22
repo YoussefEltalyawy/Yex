@@ -48,7 +48,10 @@ export const QuickAdd = forwardRef<HTMLInputElement, { defaults?: Partial<Task>;
           onBlur={() => setFocused(false)}
           onKeyDown={(e) => {
             if (e.key === "Enter") submit();
-            if (e.key === "Escape") (e.target as HTMLInputElement).blur();
+            if (e.key === "Escape") {
+              if (text) setText("");
+              else (e.target as HTMLInputElement).blur();
+            }
           }}
           placeholder={placeholder}
           className="h-full flex-1 bg-transparent text-base outline-none placeholder:text-fg-3"

@@ -28,6 +28,7 @@ const routes = [
   ["tasks-upcoming", "tasks?view=upcoming"],
   ["exams-detail", "exams?exam=@exam:Physics trial 3"],
   ["focus-dusk", "focus", async (p) => { await p.evaluate(() => localStorage.setItem("yex-focus-scene", "dusk")); await p.evaluate(() => (location.hash = "#/home")); await p.waitForTimeout(200); await p.evaluate(() => (location.hash = "#/focus")); await p.waitForTimeout(600); }],
+  ["mistake-dialog", "lesson?id=@lesson:Derivatives", async (p) => { await p.keyboard.press("Control+Shift+M"); await p.waitForTimeout(500); await p.keyboard.type("Differentiate y = sin(2x) · x²"); }],
   ["palette", "home", async (p) => { await p.keyboard.press("Control+k"); await p.keyboard.type("lim"); await p.waitForTimeout(400); }],
 ];
 

@@ -4,6 +4,7 @@ import { PageHeader } from "@/app/PageHeader";
 import { fmtClock, fmtMinutes, startOfDay } from "@/lib/dates";
 import { useList } from "@/lib/query";
 import type { TimerMode } from "@/lib/types";
+import { useApp } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { PageProps } from "@/modules/types";
 import { Button, IconButton } from "@/ui/core";
@@ -102,7 +103,11 @@ function ScenePicker({ scene, onChange }: { scene: Scene; onChange: (s: Scene) =
 export default function FocusPage(_: PageProps) {
   const t = useTimerView();
   const [scene, setScene] = useState<Scene>(() => (localStorage.getItem("yex-focus-scene") as Scene) || "paper");
-  useEffect(() => localStorage.setItem("yex-focus-scene", scene), [scene]);
+  useEffect(() => {
+    localStorage.setItem("yex-focus-scene", scene);
+    useApp.setState({ chromeDark: SCENES[scene].dark });
+    return () => useApp.setState({ chromeDark: false });
+  }, [scene]);
   const since = useMemo(() => startOfDay().toISOString(), []);
   const { data: sessions = [] } = useList("focus_session", { filter: { kind: "focus", started_at: { gte: since } }, order_by: "started_at" });
   const { data: tasks = [] } = useList("task", { filter: { done: false } });

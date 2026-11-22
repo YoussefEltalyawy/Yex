@@ -42,7 +42,10 @@ const study: ModuleDef = {
     review: lazy(() => import("./study/ReviewPage")),
   },
   nav: [{ label: "Review", icon: Brain02Icon, route: "review", order: 4, shortcut: "Ctrl+5" }],
-  commands: [{ id: "study.review", label: "Review due mistakes", group: "Study", icon: Brain02Icon, run: () => navigate("review") }],
+  commands: [
+    { id: "study.log", label: "Log a mistake", group: "Create", icon: Brain02Icon, hint: "Ctrl+Shift+M", keywords: "wrong question error", run: () => useApp.setState({ mistakeDialog: { lessonId: useApp.getState().route.name === "lesson" ? useApp.getState().route.params.id : undefined } }) },
+    { id: "study.review", label: "Review due mistakes", group: "Study", icon: Brain02Icon, run: () => navigate("review") },
+  ],
 };
 
 const analytics: ModuleDef = {

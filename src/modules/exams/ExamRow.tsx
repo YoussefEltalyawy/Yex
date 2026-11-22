@@ -19,10 +19,7 @@ export function ExamRow({ exam, subject, selected, onOpen, defaultMax, past }: {
   return (
     <div
       onClick={onOpen}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        menu.setOpen(true);
-      }}
+      onContextMenu={menu.openAt}
       className={cn("group relative flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors duration-100", selected ? "bg-selected" : "hover:bg-hover")}
     >
       <span title={subject?.name}>
@@ -58,6 +55,7 @@ export function ExamRow({ exam, subject, selected, onOpen, defaultMax, past }: {
         open={menu.open}
         onClose={menu.close}
         anchor={menu.ref}
+        point={menu.point}
         align="end"
         items={[
           { label: "Open details", icon: Edit02Icon, onSelect: onOpen },

@@ -44,6 +44,8 @@ export function TaskDetail({ id, onClose }: { id: Id; onClose: () => void }) {
   const { data: sessions = [] } = useList("focus_session", { filter: { task_id: id } });
   const [title, setTitle] = useState("");
   useEffect(() => setTitle(task?.title ?? ""), [task?.id, task?.title]);
+  const [estimate, setEstimate] = useState("");
+  useEffect(() => setEstimate(String(task?.estimate_min ?? "")), [task?.id, task?.estimate_min]);
   const focusing = useTimer((s) => s.taskId === id && s.status !== "idle");
 
   if (!task) return null;
@@ -101,8 +103,10 @@ export function TaskDetail({ id, onClose }: { id: Id; onClose: () => void }) {
                 min={0}
                 step={5}
                 placeholder="—"
-                value={task.estimate_min ?? ""}
-                onChange={(e) => patch({ estimate_min: e.target.value ? Number(e.target.value) : null })}
+                value={estimate}
+                onChange={(e) => setEstimate(e.target.value)}
+                onBlur={() => String(task.estimate_min ?? "") !== estimate && patch({ estimate_min: estimate ? Number(estimate) : null })}
+                onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
                 className="h-7 w-14 rounded-md bg-transparent text-sm tabular outline-none hover:bg-hover focus:bg-hover"
               />
               <span className="text-sm text-fg-3">min{spent > 0 && ` · ${fmtMinutes(spent)} focused`}</span>

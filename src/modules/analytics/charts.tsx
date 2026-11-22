@@ -93,7 +93,7 @@ export function MiniBars({
   values,
   labels,
   tips,
-  height = 64,
+  height,
   highlight,
   color = "var(--accent)",
 }: {
@@ -108,12 +108,12 @@ export function MiniBars({
   const grow = useGrow(values.length);
   const max = Math.max(1, ...values);
   return (
-    <div ref={tip.ref} className="relative" onMouseLeave={tip.hide}>
-      <div className={cn("flex items-end", values.length > 14 ? "gap-[2px]" : "gap-1.5")} style={{ height }}>
+    <div ref={tip.ref} className={cn("relative flex flex-col", !height && "min-h-8 flex-1")} onMouseLeave={tip.hide}>
+      <div className={cn("flex min-h-0 flex-1 items-end", values.length > 14 ? "gap-[2px]" : "gap-1.5")} style={height ? { height, flex: "none" } : undefined}>
         {values.map((v, i) => (
-          <div key={i} className="group flex h-full flex-1 items-end" onMouseEnter={(e) => tip.show(e.currentTarget.firstElementChild!, tips(i))}>
+          <div key={i} className="group flex h-full flex-1 items-end justify-center" onMouseEnter={(e) => tip.show(e.currentTarget.firstElementChild!, tips(i))}>
             <div
-              className="w-full rounded-[3px] transition-[height,background-color] duration-500 ease-out"
+              className="w-full max-w-9 rounded-[3px] transition-[height,background-color] duration-500 ease-out"
               style={{
                 height: grow ? `${Math.max(v > 0 ? 6 : 3, (v / max) * 100)}%` : "3%",
                 background: v <= 0 ? "var(--color-hover)" : i === highlight ? color : mix(color, 45),

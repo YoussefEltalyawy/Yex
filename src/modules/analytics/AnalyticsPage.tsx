@@ -53,7 +53,7 @@ function CardHeader({ title, icon, sub, action }: { title: string; icon: IconTyp
 }
 
 function Delta({ value, unit = "%", hint, className }: { value: number | null; unit?: string; hint?: string; className?: string }) {
-  if (value == null) return <span className={cn("text-fg-4", className)}>{hint ? `No data ${hint}` : "—"}</span>;
+  if (value == null) return <span className={cn("text-fg-4", className)}>—</span>;
   const up = value >= 0;
   return (
     <span className={cn("inline-flex items-center gap-0.5 whitespace-nowrap font-medium tabular", className)} style={{ color: value === 0 ? "var(--color-fg-3)" : up ? "var(--mint-fg)" : "var(--rose-fg)" }}>
@@ -68,7 +68,7 @@ function Delta({ value, unit = "%", hint, className }: { value: number | null; u
 
 function Stat({ label, value, sub, icon, delay, className }: { label: string; value: ReactNode; sub?: ReactNode; icon: IconType; delay: number; className?: string }) {
   return (
-    <Card className={cn("anim-rise col-span-2 min-w-0 p-4 lg:col-span-1", className)} style={{ animationDelay: `${delay}ms` }}>
+    <Card className={cn("anim-rise min-w-0 p-4 lg:col-span-1", className ?? "col-span-2")} style={{ animationDelay: `${delay}ms` }}>
       <div className="flex items-center gap-1.5 truncate text-xs font-medium text-fg-3">
         <Icon icon={icon} size={13} /> {label}
       </div>
@@ -250,7 +250,7 @@ export default function AnalyticsPage(_: PageProps) {
               value={exam.cur != null ? `${exam.cur}%` : "—"}
               sub={exam.delta != null ? <Delta value={exam.delta} unit=" pts" hint="vs prev" /> : exam.cur != null ? `${plural(exam.inRange, "exam")} in range` : "No graded exams"}
             />
-            <Stat className="col-span-3" label="Mastered" icon={Brain02Icon} delay={120} value={`${mastered}/${mist.total}`} sub={mist.recent ? `+${mist.recent} logged in range` : `${mist.status.open ?? 0} still open`} />
+            <Stat className="col-span-3" label="Mistakes mastered" icon={Brain02Icon} delay={120} value={`${mastered}/${mist.total}`} sub={mist.recent ? `+${mist.recent} logged in range` : `${mist.status.open ?? 0} still open`} />
           </div>
 
           <div className="mt-4 grid grid-cols-12 gap-4">
@@ -280,10 +280,10 @@ export default function AnalyticsPage(_: PageProps) {
               )}
             </Card>
 
-            <Card className="anim-rise col-span-12 flex flex-col lg:col-span-4" style={{ animationDelay: "180ms" }}>
+            <Card className="anim-rise @container col-span-12 flex flex-col lg:col-span-4" style={{ animationDelay: "180ms" }}>
               <CardHeader title="By subject" icon={PieChartIcon} sub={focus.slices.length ? plural(focus.slices.length, "subject") : undefined} />
               {focus.slices.length ? (
-                <div className="flex flex-1 flex-col items-center px-3 pb-3 pt-1">
+                <div className="flex flex-1 flex-col items-center gap-3 px-3 pb-3 pt-1 @lg:flex-row @lg:gap-10 @lg:px-8">
                   <Donut key={range} slices={focus.slices} size={148} stroke={15} active={activeSlice} onActive={setActiveSlice}>
                     {slice ? (
                       <>
@@ -298,7 +298,7 @@ export default function AnalyticsPage(_: PageProps) {
                       </>
                     )}
                   </Donut>
-                  <div className="mt-3 w-full" onMouseLeave={() => setActiveSlice(null)}>
+                  <div className="w-full @lg:flex-1" onMouseLeave={() => setActiveSlice(null)}>
                     {focus.slices.map((s) => {
                       const sub = byId[s.key];
                       return (
@@ -363,7 +363,7 @@ export default function AnalyticsPage(_: PageProps) {
                 <MiniBars
                   key={range}
                   values={tasks.completions}
-                  height={32}
+                  height={44}
                   color="var(--mint-fg)"
                   tips={(i) => <TipLine title={relativeDay(focus.days[i].date)} value={plural(tasks.completions[i], "task")} />}
                 />
